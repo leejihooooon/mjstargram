@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
+import java.text.FieldPosition
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,5 +27,9 @@ class MainActivity : AppCompatActivity() {
         tab.getTabAt(2)?.setIcon(resources.getDrawable(R.drawable.baseline_add_circle_outline_black_48))
         tab.getTabAt(3)?.setIcon(resources.getDrawable(R.drawable.baseline_favorite_border_black_48))
         tab.getTabAt(4)?.setIcon(resources.getDrawable(R.drawable.baseline_perm_identity_black_48))
+    }
+
+    fun moveTab(position:Int){
+        viewpager.currentItem=position
     }
 }
