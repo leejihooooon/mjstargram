@@ -14,9 +14,13 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.fragment_profile.*
 
@@ -25,6 +29,11 @@ class ProfileFragment : Fragment(){
     lateinit var loadingPb:ProgressBar
     lateinit var profileIv:ImageView
     lateinit var emailTv:TextView
+    lateinit var photoRv:RecyclerView
+
+    lateinit var photoAdapter:PhotoAdaptier
+
+    var postList=ArrayList<Post>()
 
     lateinit var auth:FirebaseAuth
     lateinit var firestore:FirebaseFirestore
@@ -45,6 +54,8 @@ class ProfileFragment : Fragment(){
         profileIv=view.findViewById(R.id.profile_iv)
         emailTv=view.findViewById(R.id.email_tv)
 
+        photoRv=view.findViewById(R.id.photo_rv)
+
         return view
     }
     fun startLoading(){
@@ -57,9 +68,26 @@ class ProfileFragment : Fragment(){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        photoAdapter= PhotoAdaptier(context!!,postList)
+        photoRv.adapter=photoAdapter
+        photoRv.layoutManager=GridLayoutManager(context,3)
+
         auth=FirebaseAuth.getInstance()
         firestore= FirebaseFirestore.getInstance()
         storage=FirebaseStorage.getInstance()
+        postList.clear()
+        firestore.collection("Post")
+            .whereEqualTo("userId",auth.currentUser?.email)
+            .orderBy("date",Query.Direction.ASCENDING)
+            .addSnapshotListener{querySnapshot, firebaseFirestoreException ->
+                if (querySnapshot!=null){
+                    for (dc in querySnapshot.documentChanges){
+                        var post=dc.document.toObject(Post::class.java)
+                        postList.add(0,post)
+                    }
+                    photoAdapter.notifyDataSetChanged()
+                }
+            }
 
         startLoading()
         firestore.collection("User").document(auth.currentUser?.email!!)
